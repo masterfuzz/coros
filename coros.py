@@ -4,11 +4,13 @@ import queue
 
 class Queue(queue.Queue):
     def get(self, *args, **kwargs):
+        # print("GET...")
         item = super().get(*args, **kwargs)
         # print(f"GET: {item}")
         return item
     
     def put(self, item):
+        # print(f"PUT...")
         super().put(item)
         # print(f"PUT: {item}")
 
@@ -22,7 +24,7 @@ class Sched:
         self._set_handler()
         self.running = True
         tid, t = self.get_next_runnable()
-        while t:
+        while t and self.running:
             self.run_job(tid)
             tid, t = self.get_next_runnable()
             
@@ -44,8 +46,8 @@ class Sched:
                 return tid, t
         return None, None
 
-    def add(self, task):
-        self.tasks.append(task)
+    def add(self, *tasks):
+        self.tasks += tasks
 
     def handler(self, sig, frame):
         # print("handler called")
@@ -125,24 +127,24 @@ class InterruptableTask(Task):
             self.done = True
             return
 
-def m():
-    for x in range(10):
-        time.sleep(.1)
-        yield x
+# def m():
+#     for x in range(10):
+#         time.sleep(.1)
+#         yield x
 
-def p():
-    x = yield
-    while x != EOF:
-        print(f"i got an x: {x}")
-        time.sleep(1)
-        x = yield
+# def p():
+#     x = yield
+#     while x != EOF:
+#         print(f"i got an x: {x}")
+#         time.sleep(1)
+#         x = yield
 
-s = Sched()
-producer = InterruptableTask(m())
-consumer = InterruptableTask(p())
-consumer.in_pipe = producer.get_stdout()
+# s = Sched()
+# producer = InterruptableTask(m())
+# consumer = InterruptableTask(p())
+# consumer.in_pipe = producer.get_stdout()
 
-s.add(producer)
-s.add(consumer)
+# s.add(producer)
+# s.add(consumer)
 
-s.run_all()
+# s.run_all()
